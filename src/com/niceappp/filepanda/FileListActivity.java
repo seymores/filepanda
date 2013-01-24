@@ -4,10 +4,16 @@ import java.io.File;
 import java.io.IOException;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.StatFs;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.webkit.MimeTypeMap;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 /**
  * An activity representing a list of Files. This activity has different
@@ -26,7 +32,7 @@ import android.view.MenuItem;
  */
 public class FileListActivity extends FragmentActivity implements
 		FileListFragment.Callbacks {
-	
+
 	private static final String TAG = "FileListActivity";
 
 	/**
@@ -42,13 +48,13 @@ public class FileListActivity extends FragmentActivity implements
 
 		String root = getIntent().getStringExtra("root");
 		String title = getIntent().getStringExtra("title");
-		if (title != null) setTitle(title);
-		
-		FileListFragment fragment = 
-				(FileListFragment) getSupportFragmentManager().findFragmentById(
-						R.id.file_list);
+		if (title != null)
+			setTitle(title);
+
+		FileListFragment fragment = (FileListFragment) getSupportFragmentManager()
+				.findFragmentById(R.id.file_list);
 		fragment.setActivateOnItemClick(true);
-		
+
 		if (findViewById(R.id.file_detail_container) != null) {
 			// The detail container view will be present only in the
 			// large-screen layouts (res/values-large and
@@ -58,29 +64,26 @@ public class FileListActivity extends FragmentActivity implements
 
 			// In two-pane mode, list items should be given the
 			// 'activated' state when touched.
-			
-			
 		}
-		
+
 		if (root != null) {
 			getActionBar().setDisplayHomeAsUpEnabled(true);
 			fragment.loadFileDir(root);
 			Log.d(TAG, "ROOT=" + root);
 		}
-		
+
+		displayFreeSpace();
 	}
-	
+
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) 
-	{    
-	   switch (item.getItemId()) 
-	   {        
-	      case android.R.id.home:            
-	         finish();           
-	         return true;        
-	      default:            
-	         return super.onOptionsItemSelected(item);    
-	   }
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			finish();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 
 	/**
@@ -90,7 +93,7 @@ public class FileListActivity extends FragmentActivity implements
 	@Override
 	public void onItemSelected(File f) {
 		if (mTwoPane) {
-			//XXX TODO
+			// XXX TODO
 			// In two-pane mode, show the detail view in this activity by
 			// adding or replacing the detail fragment using a
 			// fragment transaction.
@@ -102,26 +105,92 @@ public class FileListActivity extends FragmentActivity implements
 					.replace(R.id.file_detail_container, fragment).commit();
 
 		} else {
-			
+
 			if (f.isDirectory()) {
 				Intent fileList = new Intent(this, FileListActivity.class);
 				String title = (String) getTitle();
-				if ("FilePanda".equalsIgnoreCase(title)) title = "";
+				if ("FilePanda".equalsIgnoreCase(title))
+					title = "";
 				try {
 					fileList.putExtra("root", f.getCanonicalPath());
-					fileList.putExtra("title", title + "/" +  f.getName());
+					fileList.putExtra("title", title + "/" + f.getName());
 					Log.d(TAG, " >>>>> root=" + f.getCanonicalPath());
 					startActivity(fileList);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+			} else {
+		        MimeTypeMap myMime = MimeTypeMap.getSingleton();
+		        Intent newIntent = new Intent(android.content.Intent.ACTION_VIEW);
+		        String mimeType = myMime.getMimeTypeFromExtension(fileExt(f.getName().toString()).substring(1));
+		        newIntent.setDataAndType(Uri.fromFile(f),mimeType);
+		        try {
+		            startActivity(newIntent);
+		        } catch (android.content.ActivityNotFoundException e) {
+		            Toast.makeText(this, "No handler for this type of file.", 4000).show();
+		        }
 			}
-			
+
 			// In single-pane mode, simply start the detail activity
-//			// for the selected item ID.
-//			Intent detailIntent = new Intent(this, FileDetailActivity.class);
-//			detailIntent.putExtra(FileDetailFragment.ARG_ITEM_ID, id);
-//			startActivity(detailIntent);
+			// // for the selected item ID.
+			// Intent detailIntent = new Intent(this, FileDetailActivity.class);
+			// detailIntent.putExtra(FileDetailFragment.ARG_ITEM_ID, id);
+			// startActivity(detailIntent);
 		}
 	}
+
+	private String fileExt(String url) {
+	    if (url.indexOf("?")>-1) {
+	        url = url.substring(0,url.indexOf("?"));
+	    }
+	    if (url.lastIndexOf(".") == -1) {
+	        return null;
+	    } else {
+	        String ext = url.substring(url.lastIndexOf(".") );
+	        if (ext.indexOf("%")>-1) {
+	            ext = ext.substring(0,ext.indexOf("%"));
+	        }
+	        if (ext.indexOf("/")>-1) {
+	            ext = ext.substring(0,ext.indexOf("/"));
+	        }
+	        return ext.toLowerCase();
+
+	    }
+	}
+	
+	private void displayFreeSpace() {
+		ProgressBar statusBar = (ProgressBar) findViewById(R.id.progressBar);
+		
+		int total = TotalMemory();
+		int busy = BusyMemory();
+		
+		int usedMemory = busy/total;
+		Log.d(TAG, " Used up memory=" + usedMemory + ", total=" + total + ", busy=" + busy);
+		statusBar.setMax(total);
+		statusBar.setProgress(busy);
+	}
+
+	public int TotalMemory() {
+		StatFs statFs = new StatFs(Environment.getRootDirectory()
+				.getAbsolutePath());
+		int Total = (statFs.getBlockCount() * statFs.getBlockSize()) / 1048576;
+		return Total;
+	}
+
+	public int FreeMemory() {
+		StatFs statFs = new StatFs(Environment.getRootDirectory()
+				.getAbsolutePath());
+		int Free = (statFs.getAvailableBlocks() * statFs.getBlockSize()) / 1048576;
+		return Free;
+	}
+
+	public int BusyMemory() {
+		StatFs statFs = new StatFs(Environment.getRootDirectory()
+				.getAbsolutePath());
+		int Total = (statFs.getBlockCount() * statFs.getBlockSize()) / 1048576;
+		int Free = (statFs.getAvailableBlocks() * statFs.getBlockSize()) / 1048576;
+		int Busy = Total - Free;
+		return Busy;
+	}
+
 }
