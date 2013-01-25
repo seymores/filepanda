@@ -1,5 +1,7 @@
 package com.niceappp.filepanda;
 
+import java.io.File;
+
 import android.app.Application;
 import android.os.Environment;
 import android.os.StatFs;
@@ -29,6 +31,11 @@ public class FilePandaApplication extends Application {
 		return Busy;
 	}
 	
+	/**
+	 * Helper method to extract the file extension from the file full name.
+	 * @param url
+	 * @return
+	 */
 	public static String fileExt(String url) {
 	    if (url.indexOf("?")>-1) {
 	        url = url.substring(0,url.indexOf("?"));
@@ -46,5 +53,25 @@ public class FilePandaApplication extends Application {
 	        }
 	        return ext.toLowerCase();
 	    }
+	}
+
+	/**
+	 * Helper method to delete the given file. 
+	 * Will delete all the files within it if it's a directory.
+	 * @param f
+	 * @return delete status
+	 */
+	public static boolean deleteFile(File f) {
+		boolean rs = false;
+		
+		if (f.isDirectory()) {
+			File[] files = f.listFiles();			
+			for (File file : files) {
+				rs = file.delete();
+			}			
+		} 
+		rs = f.delete();
+				
+		return rs;
 	}
 }

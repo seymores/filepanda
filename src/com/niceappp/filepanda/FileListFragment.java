@@ -1,8 +1,12 @@
 package com.niceappp.filepanda;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Date;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
@@ -44,6 +48,7 @@ public class FileListFragment extends ListFragment {
 	private int mActivatedPosition = ListView.INVALID_POSITION;
 
 	private FilesAdapter adapter;
+	private String currentFilePath;
 	
 	/**
 	 * A callback interface that all activities containing this fragment must
@@ -110,18 +115,72 @@ public class FileListFragment extends ListFragment {
 			activity.openFile(f);
 		} else if ("Rename".equalsIgnoreCase(menuName)) {
 			// Rename
+			askToRenameFile(f);
 		} else if ("Share".equalsIgnoreCase(menuName)) {
 			// Rename
 		} else if ("Delete".equalsIgnoreCase(menuName)) {
-			// Rename
+			askConfirmToDelete(f);
 		} else if ("Get info".equalsIgnoreCase(menuName)) {
 			// Rename
+			getMoreInfo(f);
 		}
 		return super.onContextItemSelected(item);
 	}
 	
+	private void getMoreInfo(File f) {
+		
+		StringBuffer sb = new StringBuffer();
+		
+		String canExe = f.canExecute() ? "Yes" : "No";
+		String canWrite = f.canWrite() ? "Yes" : "No";
+		String canRead = f.canRead() ? "Yes" : "No";
+		String fileSize = f.length() / 1000 + "kb";
+
+		try {
+			sb.append(f.getCanonicalPath().toString());
+
+			sb.append("\nCan execute? " + canExe);
+			sb.append("\nCan read? " + canRead);
+			sb.append("\nCan write? " + canWrite);
+			sb.append("\nFile size: " + fileSize);
+			sb.append("\nLast modified: " + new Date(f.lastModified()));
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		new AlertDialog.Builder(getActivity()).setTitle(f.getName())
+				.setMessage(sb.toString()).setPositiveButton("Dismiss", null)
+				.show();
+	}
+
+	private void askToRenameFile(File f) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void askConfirmToDelete(final File f) {
+		Log.d(TAG, " * To delete file=" + f);
+		
+		new AlertDialog.Builder(getActivity())
+			.setTitle("Confirm delete file?")
+			.setMessage("Are you sure you want to delete this file?")
+			.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {					
+					boolean rs = FilePandaApplication.deleteFile(f);					
+					FileListFragment.this.adapter.loadFiles(currentFilePath);
+					Log.d(TAG, " Deleted " + f.getName() + "?" + rs);
+				}
+			})
+			.setNegativeButton("Cancel", null)
+			.show();
+	}
+	
 	public void loadFileDir(String dirpath) {
-		adapter.loadFiles(dirpath);
+		currentFilePath = dirpath;
+		adapter.loadFiles(currentFilePath);
 	}
 
 	@Override
