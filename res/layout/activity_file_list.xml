@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="fill_parent"
-    android:padding="4dp" >
+    android:layout_height="fill_parent" >
 
     <fragment
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -12,8 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/progressBar"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="8dp"
         tools:context=".FileListActivity"
         tools:layout="@android:layout/list_content" />
 

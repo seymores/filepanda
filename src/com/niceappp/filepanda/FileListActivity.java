@@ -11,6 +11,7 @@ import android.os.StatFs;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -114,7 +115,6 @@ public class FileListActivity extends FragmentActivity implements
 				try {
 					fileList.putExtra("root", f.getCanonicalPath());
 					fileList.putExtra("title", title + "/" + f.getName());
-					Log.d(TAG, " >>>>> root=" + f.getCanonicalPath());
 					startActivity(fileList);
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -122,12 +122,15 @@ public class FileListActivity extends FragmentActivity implements
 			} else {
 		        MimeTypeMap myMime = MimeTypeMap.getSingleton();
 		        Intent newIntent = new Intent(android.content.Intent.ACTION_VIEW);
-		        String mimeType = myMime.getMimeTypeFromExtension(fileExt(f.getName().toString()).substring(1));
-		        newIntent.setDataAndType(Uri.fromFile(f),mimeType);
+		        String mimeType = myMime.getMimeTypeFromExtension( 
+		        		FilePandaApplication.fileExt(f.getName().toString()).substring(1));
+		        newIntent.setDataAndType(Uri.fromFile(f), mimeType);
+		        
 		        try {
 		            startActivity(newIntent);
 		        } catch (android.content.ActivityNotFoundException e) {
-		            Toast.makeText(this, "No handler for this type of file.", 4000).show();
+		            Toast.makeText(this, "No handler for this type of file.", 
+		            		Toast.LENGTH_LONG).show();
 		        }
 			}
 
@@ -138,59 +141,20 @@ public class FileListActivity extends FragmentActivity implements
 			// startActivity(detailIntent);
 		}
 	}
-
-	private String fileExt(String url) {
-	    if (url.indexOf("?")>-1) {
-	        url = url.substring(0,url.indexOf("?"));
-	    }
-	    if (url.lastIndexOf(".") == -1) {
-	        return null;
-	    } else {
-	        String ext = url.substring(url.lastIndexOf(".") );
-	        if (ext.indexOf("%")>-1) {
-	            ext = ext.substring(0,ext.indexOf("%"));
-	        }
-	        if (ext.indexOf("/")>-1) {
-	            ext = ext.substring(0,ext.indexOf("/"));
-	        }
-	        return ext.toLowerCase();
-
-	    }
-	}
 	
 	private void displayFreeSpace() {
 		ProgressBar statusBar = (ProgressBar) findViewById(R.id.progressBar);
 		
-		int total = TotalMemory();
-		int busy = BusyMemory();
+		int total = FilePandaApplication.totalMemory();
+		int busy = FilePandaApplication.busyMemory();
 		
-		int usedMemory = busy/total;
-		Log.d(TAG, " Used up memory=" + usedMemory + ", total=" + total + ", busy=" + busy);
-		statusBar.setMax(total);
-		statusBar.setProgress(busy);
+		if (busy/total > 0.5  ) { 
+			statusBar.setVisibility(View.GONE);
+		} else {		
+			statusBar.setMax(total);
+			statusBar.setProgress(busy);
+		}
 	}
 
-	public int TotalMemory() {
-		StatFs statFs = new StatFs(Environment.getRootDirectory()
-				.getAbsolutePath());
-		int Total = (statFs.getBlockCount() * statFs.getBlockSize()) / 1048576;
-		return Total;
-	}
-
-	public int FreeMemory() {
-		StatFs statFs = new StatFs(Environment.getRootDirectory()
-				.getAbsolutePath());
-		int Free = (statFs.getAvailableBlocks() * statFs.getBlockSize()) / 1048576;
-		return Free;
-	}
-
-	public int BusyMemory() {
-		StatFs statFs = new StatFs(Environment.getRootDirectory()
-				.getAbsolutePath());
-		int Total = (statFs.getBlockCount() * statFs.getBlockSize()) / 1048576;
-		int Free = (statFs.getAvailableBlocks() * statFs.getBlockSize()) / 1048576;
-		int Busy = Total - Free;
-		return Busy;
-	}
 
 }
