@@ -5,6 +5,7 @@ import java.io.File;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem;
@@ -28,6 +29,8 @@ public class FileListFragment extends ListFragment {
 	 * activated item position. Only used on tablets.
 	 */
 	private static final String STATE_ACTIVATED_POSITION = "activated_position";
+
+	private static final String TAG = "FileListFragment";
 
 	/**
 	 * The fragment's current callback object, which is notified of list item
@@ -92,13 +95,29 @@ public class FileListFragment extends ListFragment {
 	
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-	    AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-	    if (item.getTitle() == "Option 1") {
-	        // Option 1 code here 
-	   } else if (item.getTitle() == "Option 2") {
-	        // Option 2 code here
-	   }
-	    return super.onContextItemSelected(item);
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+				.getMenuInfo();
+		int index = info.position;
+		File f = (File)adapter.getItem(index);
+		
+		Log.d(TAG, "  ==>" + f.getName());
+		
+		String menuName = (String) item.getTitle();
+		FileListActivity activity = (FileListActivity)getActivity();
+		
+		if ("Open".equalsIgnoreCase(menuName)) {
+			// Open file
+			activity.openFile(f);
+		} else if ("Rename".equalsIgnoreCase(menuName)) {
+			// Rename
+		} else if ("Share".equalsIgnoreCase(menuName)) {
+			// Rename
+		} else if ("Delete".equalsIgnoreCase(menuName)) {
+			// Rename
+		} else if ("Get info".equalsIgnoreCase(menuName)) {
+			// Rename
+		}
+		return super.onContextItemSelected(item);
 	}
 	
 	public void loadFileDir(String dirpath) {
@@ -151,8 +170,6 @@ public class FileListFragment extends ListFragment {
 		File f = (File)adapter.getItem(position);
 		mCallbacks.onItemSelected(f);		
 	}
-	
-	
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {

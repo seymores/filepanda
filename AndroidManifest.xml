@@ -24,7 +24,6 @@
         </activity>
         <activity
             android:name="com.niceappp.filepanda.FileDetailActivity"
-            android:label="@string/title_file_detail"
             android:parentActivityName=".FileListActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

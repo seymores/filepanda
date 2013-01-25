@@ -107,38 +107,42 @@ public class FileListActivity extends FragmentActivity implements
 
 		} else {
 
-			if (f.isDirectory()) {
-				Intent fileList = new Intent(this, FileListActivity.class);
-				String title = (String) getTitle();
-				if ("FilePanda".equalsIgnoreCase(title))
-					title = "";
-				try {
-					fileList.putExtra("root", f.getCanonicalPath());
-					fileList.putExtra("title", title + "/" + f.getName());
-					startActivity(fileList);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			} else {
-		        MimeTypeMap myMime = MimeTypeMap.getSingleton();
-		        Intent newIntent = new Intent(android.content.Intent.ACTION_VIEW);
-		        String mimeType = myMime.getMimeTypeFromExtension( 
-		        		FilePandaApplication.fileExt(f.getName().toString()).substring(1));
-		        newIntent.setDataAndType(Uri.fromFile(f), mimeType);
-		        
-		        try {
-		            startActivity(newIntent);
-		        } catch (android.content.ActivityNotFoundException e) {
-		            Toast.makeText(this, "No handler for this type of file.", 
-		            		Toast.LENGTH_LONG).show();
-		        }
-			}
+			openFile(f);
 
 			// In single-pane mode, simply start the detail activity
 			// // for the selected item ID.
 			// Intent detailIntent = new Intent(this, FileDetailActivity.class);
 			// detailIntent.putExtra(FileDetailFragment.ARG_ITEM_ID, id);
 			// startActivity(detailIntent);
+		}
+	}
+
+	public void openFile(File f) {
+		if (f.isDirectory()) {
+			Intent fileList = new Intent(this, FileListActivity.class);
+			String title = (String) getTitle();
+			if ("FilePanda".equalsIgnoreCase(title))
+				title = "";
+			try {
+				fileList.putExtra("root", f.getCanonicalPath());
+				fileList.putExtra("title", title + "/" + f.getName());
+				startActivity(fileList);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+		    MimeTypeMap myMime = MimeTypeMap.getSingleton();
+		    Intent newIntent = new Intent(android.content.Intent.ACTION_VIEW);
+		    String mimeType = myMime.getMimeTypeFromExtension( 
+		    		FilePandaApplication.fileExt(f.getName().toString()).substring(1));
+		    newIntent.setDataAndType(Uri.fromFile(f), mimeType);
+		    
+		    try {
+		        startActivity(newIntent);
+		    } catch (android.content.ActivityNotFoundException e) {
+		        Toast.makeText(this, "No handler for this type of file.", 
+		        		Toast.LENGTH_LONG).show();
+		    }
 		}
 	}
 	

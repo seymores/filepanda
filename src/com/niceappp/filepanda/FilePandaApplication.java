@@ -33,8 +33,9 @@ public class FilePandaApplication extends Application {
 	    if (url.indexOf("?")>-1) {
 	        url = url.substring(0,url.indexOf("?"));
 	    }
+	    
 	    if (url.lastIndexOf(".") == -1) {
-	        return null;
+	        return url;
 	    } else {
 	        String ext = url.substring(url.lastIndexOf(".") );
 	        if (ext.indexOf("%")>-1) {

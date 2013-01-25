@@ -112,10 +112,14 @@ public class FilesAdapter extends BaseAdapter {
 	private String setMimeType(ImageView v, File f) {
 
         MimeTypeMap myMime = MimeTypeMap.getSingleton();
-        String ext = FilePandaApplication.fileExt(f.getName().toString()).substring(1);
+        String ext = FilePandaApplication.fileExt(f.getName()).substring(1);
 		String extMime = myMime.getMimeTypeFromExtension(ext);
 		String mimeType = null;
-		if (extMime != null) mimeType = extMime;
+		if (extMime != null) {
+			mimeType = extMime;
+		} else {
+			mimeType = ext;
+		}
         
 		Log.d(TAG, " * mimetype=" + mimeType );
 		
@@ -129,6 +133,8 @@ public class FilesAdapter extends BaseAdapter {
 			v.setImageResource(R.drawable.video);
 		} else if (mimeType.contains("pdf") || mimeType.contains("doc")) {
 			v.setImageResource(R.drawable.doc);
+		} else if (mimeType.contains("epub") || mimeType.contains("mobi"))  {
+			v.setImageResource(R.drawable.book);
 		} else if (mimeType.contains("application")) {
 			v.setImageResource(R.drawable.object);
 		} else if (mimeType.contains("text")) {
