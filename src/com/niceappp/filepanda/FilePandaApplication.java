@@ -67,6 +67,10 @@ public class FilePandaApplication extends Application {
 		if (f.isDirectory()) {
 			File[] files = f.listFiles();			
 			for (File file : files) {
+				if (file.isDirectory()) {
+					deleteFile(file);
+					continue;
+				}
 				rs = file.delete();
 			}			
 		} 

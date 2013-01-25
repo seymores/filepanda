@@ -17,6 +17,7 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -96,9 +97,12 @@ public class FileListFragment extends ListFragment {
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 	    super.onCreateContextMenu(menu, v, menuInfo);
 	    
-	    Log.d(TAG, " >>>>> " + v);
-	    
-	    menu.setHeaderTitle("Options");
+	    AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+		int index = info.position;
+		File f =  (File)adapter.getItem(index);
+		String header = "Options";
+		if (f != null) header = f.getName(); 
+	    menu.setHeaderTitle(header);
 	    
 	    menu.add("Open");
 	    menu.add("Rename");
