@@ -7,6 +7,8 @@ import java.util.Date;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
@@ -14,7 +16,9 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.EditText;
 import android.widget.ListView;
 
 /**
@@ -117,16 +121,34 @@ public class FileListFragment extends ListFragment {
 			// Rename
 			askToRenameFile(f);
 		} else if ("Share".equalsIgnoreCase(menuName)) {
-			// Rename
+			// Share
+			shareFile(f);
 		} else if ("Delete".equalsIgnoreCase(menuName)) {
 			askConfirmToDelete(f);
 		} else if ("Get info".equalsIgnoreCase(menuName)) {
-			// Rename
+			// Get more file info
 			getMoreInfo(f);
 		}
 		return super.onContextItemSelected(item);
 	}
 	
+	private void shareFile(File f) {
+		
+		MimeTypeMap myMime = MimeTypeMap.getSingleton();
+	    
+	    String mimeType = myMime.getMimeTypeFromExtension( 
+	    		FilePandaApplication.fileExt(f.getName().toString()).substring(1));
+	    
+		Intent intent=new Intent(android.content.Intent.ACTION_SEND);
+		intent.setType(mimeType);
+		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+		Uri uri = Uri.fromFile(f);
+	    intent.putExtra(Intent.EXTRA_STREAM, uri);
+
+		startActivity(Intent.createChooser(intent, "Share with"));
+		
+	}
+
 	private void getMoreInfo(File f) {
 		
 		StringBuffer sb = new StringBuffer();
@@ -154,8 +176,28 @@ public class FileListFragment extends ListFragment {
 				.show();
 	}
 
-	private void askToRenameFile(File f) {
-		// TODO Auto-generated method stub
+	private void askToRenameFile(final File f) {
+		
+		final EditText textfield = new EditText(getActivity());
+		textfield.setHint("New file name");
+		new AlertDialog.Builder(getActivity())
+		.setTitle("Rename " + f.getName())
+		.setView(textfield)
+		.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				String newName = textfield.getText().toString();
+				if (newName == null || newName.length() == 0) return;
+				File dir = f.getParentFile();
+				File newfile = new File(dir.getPath(), newName);
+				boolean rs = f.renameTo(newfile);
+				Log.d(TAG, " * Renamed to " + newfile.getName() + ", success? " + rs);
+				FileListFragment.this.loadFileDir(currentFilePath);
+			} 
+		})
+		.setNegativeButton("Cancel", null)
+		.show();
 		
 	}
 
