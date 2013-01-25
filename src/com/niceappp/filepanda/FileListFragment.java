@@ -94,7 +94,12 @@ public class FileListFragment extends ListFragment {
 	
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-	    super.onCreateContextMenu(menu, v, menuInfo);	    
+	    super.onCreateContextMenu(menu, v, menuInfo);
+	    
+	    Log.d(TAG, " >>>>> " + v);
+	    
+	    menu.setHeaderTitle("Options");
+	    
 	    menu.add("Open");
 	    menu.add("Rename");
 	    menu.add("Share");
