@@ -52,9 +52,9 @@ public class FileListFragment extends ListFragment {
 	 */
 	private int mActivatedPosition = ListView.INVALID_POSITION;
 
-	private FilesAdapter adapter;
-	private String currentFilePath;
-	
+	protected FilesAdapter adapter;
+	protected String currentFilePath;
+
 	/**
 	 * A callback interface that all activities containing this fragment must
 	 * implement. This mechanism allows activities to be notified of item
@@ -87,42 +87,47 @@ public class FileListFragment extends ListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		adapter = new FilesAdapter(getActivity());
 		setListAdapter(adapter);
-		adapter.loadFiles(null);		
+		adapter.loadFiles(null);
 	}
-	
+
 	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-	    super.onCreateContextMenu(menu, v, menuInfo);
-	    
-	    AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
 		int index = info.position;
-		File f =  (File)adapter.getItem(index);
+		File f = (File) adapter.getItem(index);
 		String header = "Options";
-		if (f != null) header = f.getName(); 
-	    menu.setHeaderTitle(header);
-	    
-	    menu.add("Open");
-	    menu.add("Rename");
-	    menu.add("Share");
-	    menu.add("Delete");
-	    menu.add("Get info");
+		if (f != null)
+			header = f.getName();
+		menu.setHeaderTitle(header);
+
+		menu.add("Open");
+		menu.add("Rename");
+		menu.add("Delete");
+
+		if (f != null && !f.isDirectory())
+			menu.add("Share");
+
+		menu.add("Get info");
 	}
-	
+
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 				.getMenuInfo();
 		int index = info.position;
-		File f = (File)adapter.getItem(index);
-		
+		File f = (File) adapter.getItem(index);
+
 		Log.d(TAG, "  ==>" + f.getName());
-		
+
 		String menuName = (String) item.getTitle();
-		FileListActivity activity = (FileListActivity)getActivity();
-		
+		FileListActivity activity = (FileListActivity) getActivity();
+
 		if ("Open".equalsIgnoreCase(menuName)) {
 			// Open file
 			activity.openFile(f);
@@ -140,28 +145,28 @@ public class FileListFragment extends ListFragment {
 		}
 		return super.onContextItemSelected(item);
 	}
-	
+
 	private void shareFile(File f) {
-		
+
 		MimeTypeMap myMime = MimeTypeMap.getSingleton();
-	    
-	    String mimeType = myMime.getMimeTypeFromExtension( 
-	    		FilePandaApplication.fileExt(f.getName().toString()).substring(1));
-	    
-		Intent intent=new Intent(android.content.Intent.ACTION_SEND);
+
+		String mimeType = myMime.getMimeTypeFromExtension(FilePandaApplication
+				.fileExt(f.getName().toString()).substring(1));
+
+		Intent intent = new Intent(android.content.Intent.ACTION_SEND);
 		intent.setType(mimeType);
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
 		Uri uri = Uri.fromFile(f);
-	    intent.putExtra(Intent.EXTRA_STREAM, uri);
+		intent.putExtra(Intent.EXTRA_STREAM, uri);
 
 		startActivity(Intent.createChooser(intent, "Share with"));
-		
+
 	}
 
 	private void getMoreInfo(File f) {
-		
+
 		StringBuffer sb = new StringBuffer();
-		
+
 		String canExe = f.canExecute() ? "Yes" : "No";
 		String canWrite = f.canWrite() ? "Yes" : "No";
 		String canRead = f.canRead() ? "Yes" : "No";
@@ -186,49 +191,49 @@ public class FileListFragment extends ListFragment {
 	}
 
 	private void askToRenameFile(final File f) {
-		
+
 		final EditText textfield = new EditText(getActivity());
 		textfield.setHint("New file name");
 		new AlertDialog.Builder(getActivity())
-		.setTitle("Rename " + f.getName())
-		.setView(textfield)
-		.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				String newName = textfield.getText().toString();
-				if (newName == null || newName.length() == 0) return;
-				File dir = f.getParentFile();
-				File newfile = new File(dir.getPath(), newName);
-				boolean rs = f.renameTo(newfile);
-				Log.d(TAG, " * Renamed to " + newfile.getName() + ", success? " + rs);
-				FileListFragment.this.loadFileDir(currentFilePath);
-			} 
-		})
-		.setNegativeButton("Cancel", null)
-		.show();
-		
+				.setTitle("Rename " + f.getName()).setView(textfield)
+				.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						String newName = textfield.getText().toString();
+						if (newName == null || newName.length() == 0)
+							return;
+						File dir = f.getParentFile();
+						File newfile = new File(dir.getPath(), newName);
+						boolean rs = f.renameTo(newfile);
+						Log.d(TAG, " * Renamed to " + newfile.getName()
+								+ ", success? " + rs);
+						FileListFragment.this.loadFileDir(currentFilePath);
+					}
+				}).setNegativeButton("Cancel", null).show();
+
 	}
 
 	private void askConfirmToDelete(final File f) {
 		Log.d(TAG, " * To delete file=" + f);
-		
+
 		new AlertDialog.Builder(getActivity())
-			.setTitle("Confirm delete file?")
-			.setMessage("Are you sure you want to delete this file?")
-			.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-				
-				@Override
-				public void onClick(DialogInterface dialog, int which) {					
-					boolean rs = FilePandaApplication.deleteFile(f);					
-					FileListFragment.this.adapter.loadFiles(currentFilePath);
-					Log.d(TAG, " Deleted " + f.getName() + "?" + rs);
-				}
-			})
-			.setNegativeButton("Cancel", null)
-			.show();
+				.setTitle("Confirm delete file?")
+				.setMessage("Are you sure you want to delete this file?")
+				.setPositiveButton("Delete",
+						new DialogInterface.OnClickListener() {
+
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								boolean rs = FilePandaApplication.deleteFile(f);
+								FileListFragment.this.adapter
+										.loadFiles(currentFilePath);
+								Log.d(TAG, " Deleted " + f.getName() + "?" + rs);
+							}
+						}).setNegativeButton("Cancel", null).show();
 	}
-	
+
 	public void loadFileDir(String dirpath) {
 		currentFilePath = dirpath;
 		adapter.loadFiles(currentFilePath);
@@ -277,8 +282,8 @@ public class FileListFragment extends ListFragment {
 
 		// Notify the active callbacks interface (the activity, if the
 		// fragment is attached to one) that an item has been selected.
-		File f = (File)adapter.getItem(position);
-		mCallbacks.onItemSelected(f);		
+		File f = (File) adapter.getItem(position);
+		mCallbacks.onItemSelected(f);
 	}
 
 	@Override
@@ -311,4 +316,5 @@ public class FileListFragment extends ListFragment {
 
 		mActivatedPosition = position;
 	}
+
 }

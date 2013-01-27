@@ -6,31 +6,17 @@ import java.io.IOException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.StatFs;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-/**
- * An activity representing a list of Files. This activity has different
- * presentations for handset and tablet-size devices. On handsets, the activity
- * presents a list of items, which when touched, lead to a
- * {@link FileDetailActivity} representing item details. On tablets, the
- * activity presents the list of items and item details side-by-side using two
- * vertical panes.
- * <p>
- * The activity makes heavy use of fragments. The list of items is a
- * {@link FileListFragment} and the item details (if present) is a
- * {@link FileDetailFragment}.
- * <p>
- * This activity also implements the required {@link FileListFragment.Callbacks}
- * interface to listen for item selections.
- */
+
 public class FileListActivity extends FragmentActivity implements
 		FileListFragment.Callbacks {
 
@@ -73,18 +59,41 @@ public class FileListActivity extends FragmentActivity implements
 			Log.d(TAG, "ROOT=" + root);
 		}
 
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
 		displayFreeSpace();
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.menus, menu);
+	    return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		FileListFragment fragment = (FileListFragment) getSupportFragmentManager()
+				.findFragmentById(R.id.file_list);
+		
 		switch (item.getItemId()) {
+		case R.id.sort_by_date:
+			fragment.adapter.sortFilesByDate();
+			break;
+		case R.id.sort_by_name:
+			fragment.adapter.sortFilesByName();
+			break;
 		case android.R.id.home:
 			finish();
-			return true;
+			break;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+		
+		return true;
 	}
 
 	/**
@@ -149,12 +158,16 @@ public class FileListActivity extends FragmentActivity implements
 	private void displayFreeSpace() {
 		ProgressBar statusBar = (ProgressBar) findViewById(R.id.progressBar);
 		
+		// XXX Temp solution to the crash on Nexus 7 problem
+		if (statusBar == null) return;
+		
 		int total = FilePandaApplication.totalMemory();
 		int busy = FilePandaApplication.busyMemory();
 		
 		if (busy/total > 0.5  ) { 
-			statusBar.setVisibility(View.GONE);
+			statusBar.setVisibility(View.GONE);			
 		} else {		
+			statusBar.setVisibility(View.VISIBLE);
 			statusBar.setMax(total);
 			statusBar.setProgress(busy);
 		}
