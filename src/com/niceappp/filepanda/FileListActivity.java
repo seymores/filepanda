@@ -3,6 +3,8 @@ package com.niceappp.filepanda;
 import java.io.File;
 import java.io.IOException;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -183,5 +186,16 @@ public class FileListActivity extends FragmentActivity implements
 		}
 	}
 
+	public void showFreeSpace(View v) {
+
+		TextView freespace = new TextView(this);
+		int total = FilePandaApplication.totalMemory();
+		int busy = FilePandaApplication.busyMemory();
+		freespace.setText(busy + "/" + total);
+		
+		new AlertDialog.Builder(this)				
+				.setView(freespace)
+				.setPositiveButton("Dismiss",null).show();
+	}
 
 }
