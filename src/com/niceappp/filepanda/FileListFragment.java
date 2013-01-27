@@ -147,20 +147,15 @@ public class FileListFragment extends ListFragment {
 	}
 
 	private void shareFile(File f) {
-
 		MimeTypeMap myMime = MimeTypeMap.getSingleton();
-
 		String mimeType = myMime.getMimeTypeFromExtension(FilePandaApplication
 				.fileExt(f.getName().toString()).substring(1));
-
 		Intent intent = new Intent(android.content.Intent.ACTION_SEND);
 		intent.setType(mimeType);
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
 		Uri uri = Uri.fromFile(f);
 		intent.putExtra(Intent.EXTRA_STREAM, uri);
-
 		startActivity(Intent.createChooser(intent, "Share with"));
-
 	}
 
 	private void getMoreInfo(File f) {
@@ -211,7 +206,6 @@ public class FileListFragment extends ListFragment {
 						FileListFragment.this.loadFileDir(currentFilePath);
 					}
 				}).setNegativeButton("Cancel", null).show();
-
 	}
 
 	private void askConfirmToDelete(final File f) {

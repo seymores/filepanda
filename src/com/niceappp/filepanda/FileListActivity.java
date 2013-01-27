@@ -6,6 +6,7 @@ import java.io.IOException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -78,7 +79,7 @@ public class FileListActivity extends FragmentActivity implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		FileListFragment fragment = (FileListFragment) getSupportFragmentManager()
 				.findFragmentById(R.id.file_list);
-		
+
 		switch (item.getItemId()) {
 		case R.id.sort_by_date:
 			fragment.adapter.sortFilesByDate();
@@ -89,11 +90,20 @@ public class FileListActivity extends FragmentActivity implements
 		case android.R.id.home:
 			finish();
 			break;
+		case R.id.root:
+			goToRoot();
+			break;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
-		
+
 		return true;
+	}
+
+	private void goToRoot() {
+		String startPath = Environment.getRootDirectory().getAbsolutePath();
+		File root = new File(startPath);
+		openFile(root);
 	}
 
 	/**

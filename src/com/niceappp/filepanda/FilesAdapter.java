@@ -41,8 +41,7 @@ public class FilesAdapter extends BaseAdapter {
 
 		String startPath = filepath;
 		if (startPath == null)
-			startPath = Environment.getExternalStorageDirectory()
-					.getAbsolutePath();
+			startPath = Environment.getExternalStorageDirectory().getAbsolutePath();
 
 		File root = new File(startPath);
 		File[] files = root.listFiles();
